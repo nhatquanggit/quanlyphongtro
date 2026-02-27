@@ -1,0 +1,294 @@
+.room-mgmt-grid {
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-height: calc(100vh - 80px);
+}
+
+.room-filters-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.room-search-box {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-icon {
+  position: absolute;
+  left: var(--space-4);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+  font-size: 14px;
+}
+
+.room-search-box input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4) var(--space-3) 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  background: var(--bg-page);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.room-search-box input:focus {
+  border-color: var(--primary);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 3px var(--primary-muted);
+}
+
+.room-filter-group {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.room-filter-group select {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--bg-card);
+  cursor: pointer;
+  outline: none;
+}
+
+.room-filter-group select:hover {
+  border-color: var(--text-muted);
+}
+
+/* Card & KPI */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.room-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.occupied-kpi { border-left: 4px solid var(--primary); }
+.vacant-kpi { border-left: 4px solid var(--success); }
+
+.kpi-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+}
+
+.kpi-value-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.kpi-main-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.kpi-percentage {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.kpi-positive { color: var(--success); background: var(--success-bg); }
+.kpi-negative { color: var(--danger); background: var(--danger-bg); }
+.kpi-neutral { color: var(--text-secondary); background: var(--border-light); }
+
+/* Sections */
+.floor-divider {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: var(--space-6) 0 var(--space-4);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.room-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.no-results {
+  padding: var(--space-10);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.rooms-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.room-card {
+  padding: var(--space-5);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.room-card:hover {
+  border-color: var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+.room-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.room-number {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.status-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.badge-occupied { background: var(--primary-muted); color: var(--primary); }
+.badge-vacant { background: var(--success-bg); color: var(--success); }
+.badge-maint { background: var(--warning-bg); color: var(--warning); }
+
+.room-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.detail-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: var(--space-2);
+}
+
+.room-type {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.room-card-footer {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-light);
+}
+
+.btn-assign {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-assign:hover {
+  background: var(--bg-page);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.occupied-actions,
+.maint-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: var(--space-2);
+  color: var(--text-muted);
+  border-radius: var(--radius);
+  transition: color 0.15s, background 0.15s;
+}
+
+.icon-btn:hover {
+  color: var(--primary);
+  background: var(--primary-muted);
+}
+
+.floating-btn {
+  position: fixed;
+  bottom: var(--space-8);
+  right: var(--space-8);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.floating-btn:hover {
+  background: var(--primary-hover);
+  box-shadow: 0 6px 12px rgba(79, 70, 229, 0.25);
+}
