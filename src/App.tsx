@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import Sidebar from './components/Sidebar.tsx';
 import Header from './components/Header.tsx';
@@ -9,13 +9,48 @@ import InvoiceManagement from './components/InvoiceManagement.tsx';
 import Reports from './components/Reports.tsx';
 import Maintenance from './components/Maintenance.tsx';
 import Settings from './components/Settings.tsx';
+import LandingPage from './components/LandingPage.tsx';
+import AuthLoginPage, { type LoginApiResponse } from './components/AuthLoginPage.tsx';
+import TenantPortal from './components/TenantPortal.tsx';
 import type { Language } from './translations.ts';
 import { translations } from './translations.ts';
+
+interface User {
+  id: string;
+  email: string;
+  fullName: string;
+  phone: string;
+  role: string;
+  avatar: string | null;
+}
 
 function App() {
   const [activePage, setActivePage] = useState('dashboard');
   const [lang, setLang] = useState<Language>('vn');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [authView, setAuthView] = useState<'landing' | 'login'>('landing');
+  const [loginInitialMode, setLoginInitialMode] = useState<'login' | 'signup'>('login');
   const [activeModal, setActiveModal] = useState<string | null>(null);
+
+  // Check if user is already logged in on mount
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    const savedUser = localStorage.getItem('currentUser');
+    
+    if (token && savedUser) {
+      try {
+        const user = JSON.parse(savedUser) as User;
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+      } catch (err) {
+        console.error('Failed to parse saved user', err);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('currentUser');
+      }
+    }
+  }, []);
 
   const closeModal = () => setActiveModal(null);
 
@@ -151,6 +186,27 @@ function App() {
     }
   };
 
+  const handleShowLogin = (mode: 'login' | 'signup') => {
+    setAuthView('login');
+    setLoginInitialMode(mode);
+  };
+
+  const handleLoginSuccess = (auth: LoginApiResponse) => {
+    console.info('Logged in user', auth.user);
+    setCurrentUser(auth.user);
+    setIsAuthenticated(true);
+    setAuthView('landing');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setActivePage('dashboard');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('currentUser');
+  };
+
   const renderContent = () => {
     switch (activePage) {
       case 'dashboard': return <DashboardContent lang={lang} onNavigate={setActivePage} />;
@@ -164,10 +220,40 @@ function App() {
     }
   };
 
+  if (!isAuthenticated) {
+    if (authView === 'login') {
+      return (
+        <AuthLoginPage
+          lang={lang}
+          onLoginSuccess={handleLoginSuccess}
+          onBackToLanding={() => setAuthView('landing')}
+          initialMode={loginInitialMode}
+        />
+      );
+    }
+
+    return (
+      <LandingPage
+        lang={lang}
+        onLoginClick={() => handleShowLogin('login')}
+        onSignUpClick={() => handleShowLogin('signup')}
+      />
+    );
+  }
+
+  // Check user role and render appropriate interface
+  const isAdmin = currentUser?.role === 'ADMIN';
+
+  // If user is TENANT, show Tenant Portal
+  if (!isAdmin) {
+    return <TenantPortal lang={lang} onLogout={handleLogout} />;
+  }
+
+  // If user is ADMIN, show Admin Dashboard
   return (
     <div className="app-layout">
       {renderModal()}
-      <Sidebar activePage={activePage} onNavigate={setActivePage} lang={lang} />
+      <Sidebar activePage={activePage} onNavigate={setActivePage} lang={lang} onLogout={handleLogout} />
       <div className="main-content">
         <Header activePage={activePage} lang={lang} onAction={handleAction} />
         {renderContent()}

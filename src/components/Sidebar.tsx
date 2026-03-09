@@ -29,9 +29,10 @@ interface SidebarProps {
   activePage: string;
   onNavigate: (page: string) => void;
   lang: Language;
+  onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate, lang }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate, lang, onLogout }) => {
   const t = translations[lang].sidebar;
   return (
     <aside className="sidebar">
@@ -130,7 +131,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate, lang }) => {
           <span className="sidebar__icon"><HelpCircle size={iconSize} strokeWidth={2} /></span>
           <span>{lang === 'vn' ? 'Hỗ trợ' : 'Support'}</span>
         </div>
-        <div className="sidebar__logout">
+        <div className="sidebar__logout" onClick={onLogout}>
           <span className="sidebar__icon"><LogOut size={iconSize} strokeWidth={2} /></span>
           <span>{lang === 'vn' ? 'Đăng xuất' : 'Logout'}</span>
         </div>

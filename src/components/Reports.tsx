@@ -88,6 +88,18 @@ const Reports: React.FC<ReportProps> = ({ lang }) => {
     }).format(value);
   };
 
+  const toNumber = (value: unknown): number => {
+    if (typeof value === 'number') return value;
+    if (Array.isArray(value)) {
+      const first = (value as unknown[])[0];
+      return typeof first === 'number' ? first : Number(first ?? 0);
+    }
+    if (typeof value === 'string') return Number(value);
+    return 0;
+  };
+
+  const formatTooltipValue = (value: unknown) => formatCurrency(toNumber(value));
+
   const getTranslatedExpenseName = (name: string) => {
     if (lang !== 'vn') return name;
     switch (name) {
@@ -161,7 +173,7 @@ const Reports: React.FC<ReportProps> = ({ lang }) => {
                     />
                     <Tooltip 
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                      formatter={(value: number) => [formatCurrency(value), '']}
+                      formatter={(value) => [formatTooltipValue(value), '']}
                     />
                     <Legend 
                       verticalAlign="top" 
@@ -217,7 +229,7 @@ const Reports: React.FC<ReportProps> = ({ lang }) => {
                             ))}
                           </Pie>
                           <Tooltip 
-                            formatter={(value: number) => formatCurrency(value)}
+                            formatter={(value) => formatTooltipValue(value)}
                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                           />
                         </PieChart>
