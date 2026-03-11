@@ -1,0 +1,398 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String         @id @default(uuid())
+  email                String         @unique
+  password             String
+  fullName             String
+  phone                String?
+  role                 UserRole       @default(STAFF)
+  avatar               String?
+  isActive             Boolean        @default(true)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  activityLogs         ActivityLog[]
+  bannerImages         BannerImage[]
+  assignedMaintenances Maintenance[]  @relation("AssignedToUser")
+  notifications        Notification[]
+  properties           Property[]
+  refreshTokens        RefreshToken[]
+  settings             Setting[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Property {
+  id           String        @id @default(uuid())
+  name         String
+  address      String
+  totalFloors  Int
+  totalRooms   Int
+  currency     String        @default("VND")
+  timezone     String        @default("Asia/Ho_Chi_Minh")
+  ownerId      String
+  settings     Json?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  activityLogs ActivityLog[]
+  bannerImages BannerImage[]
+  contracts    Contract[]
+  expenses     Expense[]
+  invoices     Invoice[]
+  maintenance  Maintenance[]
+  owner        User          @relation(fields: [ownerId], references: [id])
+  reports      Report[]
+  rooms        Room[]
+  settingsData Setting[]
+  tenants      Tenant[]
+
+  @@map("properties")
+}
+
+model Room {
+  id          String        @id @default(uuid())
+  propertyId  String
+  roomNumber  String
+  floor       Int
+  type        RoomType      @default(SINGLE)
+  status      RoomStatus    @default(VACANT)
+  price       Float
+  deposit     Float
+  area        Float?
+  amenities   Json?
+  description String?
+  images      Json?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  contracts   Contract[]
+  invoices    Invoice[]
+  maintenance Maintenance[]
+  property    Property      @relation(fields: [propertyId], references: [id])
+
+  @@unique([propertyId, roomNumber])
+  @@map("rooms")
+}
+
+model Tenant {
+  id               String       @id @default(uuid())
+  propertyId       String
+  fullName         String
+  phone            String
+  email            String?
+  idCard           String?
+  dateOfBirth      DateTime?
+  address          String?
+  emergencyContact Json?
+  status           TenantStatus @default(ACTIVE)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  contracts        Contract[]
+  invoices         Invoice[]
+  payments         Payment[]
+  property         Property     @relation(fields: [propertyId], references: [id])
+
+  @@map("tenants")
+}
+
+model Contract {
+  id               String         @id @default(uuid())
+  roomId           String
+  tenantId         String
+  propertyId       String
+  startDate        DateTime
+  endDate          DateTime
+  monthlyRent      Float
+  deposit          Float
+  electricityPrice Float
+  waterPrice       Float
+  services         Json?
+  status           ContractStatus @default(ACTIVE)
+  signedDate       DateTime?
+  documentUrl      String?
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  property         Property       @relation(fields: [propertyId], references: [id])
+  room             Room           @relation(fields: [roomId], references: [id])
+  tenant           Tenant         @relation(fields: [tenantId], references: [id])
+  invoices         Invoice[]
+
+  @@map("contracts")
+}
+
+model Invoice {
+  id               String        @id @default(uuid())
+  contractId       String
+  tenantId         String
+  roomId           String
+  propertyId       String
+  billingMonth     String
+  dueDate          DateTime
+  rentAmount       Float
+  electricityUsage Float         @default(0)
+  electricityCost  Float         @default(0)
+  waterUsage       Float         @default(0)
+  waterCost        Float         @default(0)
+  serviceCharges   Json?
+  totalAmount      Float
+  paidAmount       Float         @default(0)
+  remainingAmount  Float
+  status           InvoiceStatus @default(UNPAID)
+  paymentDate      DateTime?
+  paymentMethod    String?
+  notes            String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  contract         Contract      @relation(fields: [contractId], references: [id])
+  property         Property      @relation(fields: [propertyId], references: [id])
+  room             Room          @relation(fields: [roomId], references: [id])
+  tenant           Tenant        @relation(fields: [tenantId], references: [id])
+  payments         Payment[]
+
+  @@unique([contractId, billingMonth])
+  @@map("invoices")
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  invoiceId     String
+  tenantId      String
+  amount        Float
+  paymentMethod PaymentMethod
+  paymentDate   DateTime
+  reference     String?
+  notes         String?
+  receiptUrl    String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  invoice       Invoice       @relation(fields: [invoiceId], references: [id])
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
+
+  @@map("payments")
+}
+
+model Maintenance {
+  id            String             @id @default(uuid())
+  roomId        String
+  propertyId    String
+  reportedById  String?
+  assignedToId  String?
+  title         String
+  description   String
+  type          MaintenanceType
+  urgency       MaintenanceUrgency
+  status        MaintenanceStatus  @default(PENDING)
+  reportedDate  DateTime           @default(now())
+  scheduledDate DateTime?
+  completedDate DateTime?
+  cost          Float?
+  images        Json?
+  notes         String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  assignedTo    User?              @relation("AssignedToUser", fields: [assignedToId], references: [id])
+  property      Property           @relation(fields: [propertyId], references: [id])
+  room          Room               @relation(fields: [roomId], references: [id])
+
+  @@map("maintenance")
+}
+
+model Expense {
+  id          String          @id @default(uuid())
+  propertyId  String
+  category    ExpenseCategory
+  amount      Float
+  date        DateTime
+  description String
+  receiptUrl  String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  property    Property        @relation(fields: [propertyId], references: [id])
+
+  @@map("expenses")
+}
+
+model Report {
+  id            String     @id @default(uuid())
+  propertyId    String
+  reportType    ReportType
+  period        String
+  totalRevenue  Float      @default(0)
+  totalExpenses Float      @default(0)
+  netProfit     Float      @default(0)
+  unpaidDues    Float      @default(0)
+  occupancyRate Float      @default(0)
+  data          Json?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  property      Property   @relation(fields: [propertyId], references: [id])
+
+  @@unique([propertyId, period, reportType])
+  @@map("reports")
+}
+
+model BannerImage {
+  id         String   @id @default(uuid())
+  propertyId String
+  userId     String
+  imageUrl   String
+  order      Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  property   Property @relation(fields: [propertyId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@map("banner_images")
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid())
+  userId     String
+  propertyId String
+  action     String
+  entityType String
+  entityId   String
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+  property   Property @relation(fields: [propertyId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@map("activity_logs")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+model Setting {
+  id         String    @id @default(uuid())
+  propertyId String?
+  userId     String?
+  category   String
+  key        String
+  value      Json
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  property   Property? @relation(fields: [propertyId], references: [id])
+  user       User?     @relation(fields: [userId], references: [id])
+
+  @@unique([propertyId, userId, category, key])
+  @@map("settings")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum RoomType {
+  SINGLE
+  DOUBLE
+  VIP
+  STUDIO
+}
+
+enum RoomStatus {
+  VACANT
+  OCCUPIED
+  MAINTENANCE
+}
+
+enum TenantStatus {
+  ACTIVE
+  ENDING_SOON
+  PAST
+}
+
+enum ContractStatus {
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CARD
+  MOMO
+  ZALO_PAY
+}
+
+enum MaintenanceType {
+  PLUMBING
+  ELECTRICAL
+  FURNITURE
+  OTHER
+}
+
+enum MaintenanceUrgency {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum MaintenanceStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ExpenseCategory {
+  MAINTENANCE
+  UTILITIES
+  SALARY
+  TAX
+  OTHER
+}
+
+enum ReportType {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum NotificationType {
+  PAYMENT
+  MAINTENANCE
+  CONTRACT
+  SYSTEM
+}

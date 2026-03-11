@@ -1,0 +1,62 @@
+===========================================
+🔑 ACCESS TOKEN (Dùng để authorize trong Swagger)
+===========================================
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4Zjg4MzU5Mi05YTY4LTQ1YjgtYWZiYy1kMTA1MWFmNzg2Y2EiLCJlbWFpbCI6InRlc3RAcGhvbmd0cm8uY29tIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzcyODg5NDcxLCJleHAiOjE3NzI5NzU4NzF9.cEDwgYk-s1Rb2cMW-NVF-yQBAqxugJ1a152L6zB7F5A
+
+===========================================
+🔄 REFRESH TOKEN (Dùng để lấy token mới)
+===========================================
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4Zjg4MzU5Mi05YTY4LTQ1YjgtYWZiYy1kMTA1MWFmNzg2Y2EiLCJlbWFpbCI6InRlc3RAcGhvbmd0cm8uY29tIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzcyODg5NDcxLCJleHAiOjE3NzM0OTQyNzF9.dotvV-GE3khzMTASkLt1WwTpd5hqQXblQZpPhmG29pY
+
+===========================================
+📝 THÔNG TIN ĐĂNG NHẬP
+===========================================
+
+Email: test@phongtro.com
+Password: Test@123
+Role: ADMIN
+
+===========================================
+🚀 CÁCH SỬ DỤNG TRONG SWAGGER
+===========================================
+
+1. Mở Swagger UI: http://localhost:3000/swagger
+
+2. Click nút "Authorize" 🔓 (góc trên bên phải)
+
+3. Trong popup, paste ACCESS TOKEN vào ô "Value"
+   (KHÔNG cần thêm "Bearer " ở đầu)
+
+4. Click "Authorize"
+
+5. Click "Close"
+
+6. Bây giờ bạn có thể test tất cả API! ✅
+
+===========================================
+⏰ THỜI HẠN TOKEN
+===========================================
+
+Access Token: Hết hạn sau 1 ngày (24 giờ)
+Refresh Token: Hết hạn sau 7 ngày
+
+Khi Access Token hết hạn, dùng Refresh Token để lấy token mới:
+POST /api/auth/refresh-token
+
+===========================================
+🔄 LẤY TOKEN MỚI
+===========================================
+
+Nếu token hết hạn, chạy lệnh:
+
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@phongtro.com","password":"Test@123"}'
+
+Hoặc trong PowerShell:
+
+Invoke-RestMethod -Uri "http://localhost:3000/api/auth/login" -Method Post -ContentType "application/json" -Body '{"email":"test@phongtro.com","password":"Test@123"}'
+
+===========================================
