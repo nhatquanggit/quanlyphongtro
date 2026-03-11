@@ -31,6 +31,7 @@ const Header: React.FC<HeaderProps> = ({ activePage, lang, onAction }) => {
     if (activePage === 'invoices') return t.invoiceDash;
     if (activePage === 'reports') return t.reportDash;
     if (activePage === 'maintenance') return t.maintDash;
+    if (activePage === 'chat') return (t as any).chatDash ?? 'Chat';
     if (activePage === 'settings') return t.settingsDash;
     return 'Dashboard';
   };

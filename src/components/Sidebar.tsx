@@ -9,6 +9,7 @@ import {
   FileText,
   BarChart3,
   Wrench,
+  MessageCircle,
   Settings,
   LogOut,
   HelpCircle,
@@ -23,6 +24,7 @@ const navItems: { key: string; Icon: React.ComponentType<{ size?: number; classN
   { key: 'invoices', Icon: FileText },
   { key: 'reports', Icon: BarChart3 },
   { key: 'maintenance', Icon: Wrench },
+  { key: 'chat', Icon: MessageCircle },
 ];
 
 interface SidebarProps {
@@ -64,6 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate, lang, onLogou
                   {key === 'invoices' && t.invoices}
                   {key === 'reports' && t.reports}
                   {key === 'maintenance' && t.maintenance}
+                  {key === 'chat' && (t as any).chat}
                 </span>
               </li>
             ))}

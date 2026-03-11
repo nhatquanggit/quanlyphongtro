@@ -1,5 +1,6 @@
 import http from 'node:http';
 import { randomUUID } from 'node:crypto';
+import { WebSocketServer } from 'ws';
 
 const port = Number(process.env.PORT ?? 3001);
 
@@ -481,6 +482,161 @@ const server = http.createServer(async (req, res) => {
     if (err instanceof Error && err.message === 'BodyTooLarge') return json(res, 413, { error: 'BODY_TOO_LARGE' });
     return json(res, 500, { error: 'INTERNAL_ERROR' });
   }
+});
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * WebSocket Chat (in-memory)
+ * - Supports simple Admin ↔ Tenant messaging
+ * - Protocol:
+ *   - Client sends { type: 'auth', userId, userName, role: 'ADMIN'|'TENANT' }
+ *   - Admin may send { type: 'join', conversationId } to load history
+ *   - Both roles may send { type: 'message', text, conversationId? }
+ *   - Optional: { type: 'typing', conversationId }
+ * - Server emits:
+ *   - { type: 'conversations', items: [...] } to ADMIN on auth
+ *   - { type: 'newConversation', conversation } when tenant starts chatting
+ *   - { type: 'history', messages: [...] } after 'join'
+ *   - { type: 'message', message } on new message
+ *   - { type: 'userStatus', userId, online } on tenant connect/disconnect
+ * ─────────────────────────────────────────────────────────────────────────── */
+const wss = new WebSocketServer({ server });
+
+const admins = new Set(); // Set<ws>
+const tenants = new Map(); // Map<tenantId, ws>
+const clientMeta = new Map(); // Map<ws, { userId, userName, role }>
+const conversations = new Map(); // Map<convId, { id, tenantId, tenantName, lastMessage, lastTime, unread, online }>
+const history = new Map(); // Map<convId, ChatMessage[]>
+
+function send(ws, data) {
+  try {
+    if (ws.readyState === 1) ws.send(JSON.stringify(data));
+  } catch {}
+}
+
+function broadcastToAdmins(data) {
+  admins.forEach((ws) => send(ws, data));
+}
+
+wss.on('connection', (ws) => {
+  clientMeta.set(ws, { userId: '', userName: '', role: 'TENANT' });
+
+  ws.on('message', (buf) => {
+    let msg;
+    try { msg = JSON.parse(buf.toString()); } catch { return; }
+
+    const meta = clientMeta.get(ws);
+    if (!meta) return;
+
+    if (msg.type === 'auth') {
+      meta.userId = String(msg.userId || '');
+      meta.userName = String(msg.userName || 'User');
+      meta.role = msg.role === 'ADMIN' ? 'ADMIN' : 'TENANT';
+      clientMeta.set(ws, meta);
+
+      if (meta.role === 'ADMIN') {
+        admins.add(ws);
+        const items = Array.from(conversations.values())
+          .sort((a, b) => (b.lastTime || '').localeCompare(a.lastTime || ''));
+        send(ws, { type: 'conversations', items });
+      } else {
+        tenants.set(meta.userId, ws);
+        // Mark online for this tenant
+        const convId = meta.userId;
+        const conv = conversations.get(convId) ?? {
+          id: convId,
+          tenantId: convId,
+          tenantName: meta.userName,
+          lastMessage: '',
+          lastTime: '',
+          unread: 0,
+          online: true,
+        };
+        conv.online = true;
+        conversations.set(convId, conv);
+        broadcastToAdmins({ type: 'userStatus', userId: convId, online: true });
+      }
+      return;
+    }
+
+    if (msg.type === 'join' && meta.role === 'ADMIN') {
+      const convId = String(msg.conversationId || '');
+      send(ws, { type: 'history', messages: history.get(convId) ?? [] });
+      return;
+    }
+
+    if (msg.type === 'typing') {
+      const convId = String(msg.conversationId || meta.userId || '');
+      broadcastToAdmins({ type: 'typing', conversationId: convId });
+      return;
+    }
+
+    if (msg.type === 'message') {
+      const now = new Date().toISOString();
+      const isTenant = meta.role === 'TENANT';
+      const convId = isTenant ? meta.userId : String(msg.conversationId || '');
+
+      if (!convId) return;
+
+      const chatMsg = {
+        id: randomUUID(),
+        conversationId: convId,
+        senderId: meta.userId,
+        senderName: meta.userName,
+        senderRole: meta.role,
+        text: String(msg.text || ''),
+        timestamp: now,
+      };
+
+      const list = history.get(convId) ?? [];
+      list.push(chatMsg);
+      history.set(convId, list);
+
+      const conv = conversations.get(convId) ?? {
+        id: convId,
+        tenantId: convId,
+        tenantName: isTenant ? meta.userName : (conversations.get(convId)?.tenantName ?? 'Tenant'),
+        lastMessage: '',
+        lastTime: '',
+        unread: 0,
+        online: tenants.has(convId),
+      };
+      conv.lastMessage = chatMsg.text;
+      conv.lastTime = chatMsg.timestamp;
+      conversations.set(convId, conv);
+
+      // If first message creates a conversation, notify admins
+      if (list.length === 1) {
+        broadcastToAdmins({ type: 'newConversation', conversation: conv });
+      }
+
+      // Fanout to admins
+      broadcastToAdmins({ type: 'message', message: chatMsg });
+
+      // Deliver to tenant if sender is admin
+      if (!isTenant) {
+        const t = tenants.get(convId);
+        if (t) send(t, { type: 'message', message: chatMsg });
+      }
+      return;
+    }
+  });
+
+  ws.on('close', () => {
+    const meta = clientMeta.get(ws);
+    if (!meta) return;
+    clientMeta.delete(ws);
+    if (meta.role === 'ADMIN') {
+      admins.delete(ws);
+    } else {
+      tenants.delete(meta.userId);
+      const conv = conversations.get(meta.userId);
+      if (conv) {
+        conv.online = false;
+        conversations.set(meta.userId, conv);
+      }
+      broadcastToAdmins({ type: 'userStatus', userId: meta.userId, online: false });
+    }
+  });
 });
 
 server.listen(port, () => {

@@ -12,6 +12,8 @@ import Settings from './components/Settings.tsx';
 import LandingPage from './components/LandingPage.tsx';
 import AuthLoginPage, { type LoginApiResponse } from './components/AuthLoginPage.tsx';
 import TenantPortal from './components/TenantPortal.tsx';
+import ChatBox from './components/ChatBox.tsx';
+import AdminChat from './components/AdminChat.tsx';
 import type { Language } from './translations.ts';
 import { translations } from './translations.ts';
 
@@ -216,6 +218,7 @@ function App() {
       case 'reports': return <Reports lang={lang} />;
       case 'maintenance': return <Maintenance lang={lang} />;
       case 'settings': return <Settings lang={lang} onLanguageChange={setLang} />;
+      case 'chat': return <AdminChat lang={lang} userId={currentUser?.id ?? ''} userName={currentUser?.fullName ?? 'Admin'} />;
       default: return <DashboardContent lang={lang} onNavigate={setActivePage} />;
     }
   };
@@ -246,7 +249,12 @@ function App() {
 
   // If user is TENANT, show Tenant Portal
   if (!isAdmin) {
-    return <TenantPortal lang={lang} onLogout={handleLogout} />;
+    return (
+      <>
+        <TenantPortal lang={lang} onLogout={handleLogout} />
+        <ChatBox lang={lang} userId={currentUser?.id ?? ''} userName={currentUser?.fullName ?? ''} />
+      </>
+    );
   }
 
   // If user is ADMIN, show Admin Dashboard
