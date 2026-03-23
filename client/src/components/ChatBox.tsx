@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import './ChatBox.css';
 import type { Language } from '../translations';
+import { CHAT_WS_URL } from '../api/realtime';
 
 /* ── Types ─────────────────────────────────── */
 interface ChatMessage {
@@ -19,13 +20,6 @@ interface ChatBoxProps {
   userId: string;
   userName: string;
 }
-
-const WS_URL = import.meta.env.VITE_WS_URL ?? (() => {
-  const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  const host = window.location.hostname || 'localhost';
-  const port = 3001;
-  return `${proto}://${host}:${port}`;
-})();
 
 /* ── Component ─────────────────────────────── */
 const ChatBox: React.FC<ChatBoxProps> = ({ lang, userId, userName }) => {
@@ -61,7 +55,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ lang, userId, userName }) => {
     if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) return;
 
     setWsStatus('connecting');
-    const ws = new WebSocket(WS_URL);
+    const ws = new WebSocket(CHAT_WS_URL);
     wsRef.current = ws;
 
     ws.onopen = () => {

@@ -1,14 +1,20 @@
 const DEFAULT_API_BASE_URL = 'http://localhost:3000/api';
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_BASE_URL;
+const normalizeApiBaseUrl = (value: string) => value.replace(/\/$/, '');
+
+export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_BASE_URL);
 
 // Backend origin for constructing asset URLs (e.g. avatar images)
 export const BACKEND_ORIGIN = (() => {
-  try {
-    return new URL(API_BASE_URL).origin;
-  } catch {
-    return 'http://localhost:3000';
+  if (/^https?:\/\//i.test(API_BASE_URL)) {
+    try {
+      return new URL(API_BASE_URL).origin;
+    } catch {
+      return window.location.origin;
+    }
   }
+
+  return window.location.origin;
 })();
 
 export class ApiError extends Error {

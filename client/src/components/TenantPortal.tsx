@@ -7,6 +7,7 @@ import { getInvoices, type Invoice } from '../api/invoices';
 import { getMaintenanceList, createMaintenance, type MaintenanceItem } from '../api/maintenance';
 import { getRooms, type Room } from '../api/rooms';
 import { BACKEND_ORIGIN, apiRequest } from '../api/client';
+import { CHAT_WS_URL } from '../api/realtime';
 
 type TenantPageKey = 'dashboard' | 'bills' | 'maintenance' | 'profile' | 'rooms';
 
@@ -836,11 +837,6 @@ const TenantProfile: React.FC<ProfileProps> = ({ isVn, user, onUserUpdate }) => 
 ══════════════════════════════════════════════════════ */
 interface RoomsProps { isVn: boolean; user: AuthUser | null; }
 
-const WS_URL = import.meta.env.VITE_WS_URL ?? (() => {
-  const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  return `${proto}://${window.location.hostname || 'localhost'}:3001`;
-})();
-
 const TenantRooms: React.FC<RoomsProps> = ({ isVn, user }) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
@@ -859,7 +855,7 @@ const TenantRooms: React.FC<RoomsProps> = ({ isVn, user }) => {
     if (sentRoom === room.id) return;
     const text = `[YÊU CẦU THUÊ PHÒNG] Xin chào admin! Tôi là ${user?.fullName ?? 'Khách'} (email: ${user?.email ?? ''}, SĐT: ${user?.phone ?? 'chưa cập nhật'}). Tôi muốn thuê phòng số ${room.roomNumber}, Tầng ${room.floor}, Loại: ${room.type}, Giá: ${fmtCurrency(room.price)}/tháng. Vui lòng liên hệ lại để hoàn tất thủ tục.`;
     try {
-      const ws = new WebSocket(WS_URL);
+      const ws = new WebSocket(CHAT_WS_URL);
       ws.onopen = () => {
         ws.send(JSON.stringify({ type: 'auth', userId: user?.id ?? 'guest', userName: user?.fullName ?? 'Khách', role: 'TENANT' }));
         setTimeout(() => {
