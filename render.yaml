@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: phongtro-api
+    runtime: node
+    rootDir: server
+    plan: free
+    autoDeploy: true
+    buildCommand: npm ci && npm run prisma:generate && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGIN
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: UPLOAD_DIRECTORY
+        value: ./uploads
+
+  - type: web
+    name: phongtro-chat
+    runtime: node
+    rootDir: server
+    plan: free
+    autoDeploy: true
+    buildCommand: npm ci
+    startCommand: sh -c "CHAT_PORT=$PORT npm run chat"
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CHAT_AI_ENABLED
+        value: true
+      - key: CHAT_AI_NAME
+        value: Tro ly AI
