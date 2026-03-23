@@ -1,0 +1,135 @@
+{
+  "conversations": [
+    {
+      "id": "e9b8f75f-812c-4293-b09d-98146bb81336",
+      "tenantId": "0ca23ad7-a90e-495d-9aaf-13ee3e4559df",
+      "tenantName": "quang",
+      "messages": [
+        {
+          "id": "73991a36-080d-419d-b651-59885886deb6",
+          "conversationId": "e9b8f75f-812c-4293-b09d-98146bb81336",
+          "senderId": "0ca23ad7-a90e-495d-9aaf-13ee3e4559df",
+          "senderName": "quang",
+          "senderRole": "TENANT",
+          "text": "xin chào",
+          "clientMessageId": "1774186442244-3sbmg7",
+          "timestamp": "2026-03-22T13:34:02.244Z"
+        },
+        {
+          "id": "e8cd3c16-7e31-4af4-bd12-c61d59fc3b2d",
+          "conversationId": "e9b8f75f-812c-4293-b09d-98146bb81336",
+          "senderId": "ai-assistant",
+          "senderName": "Tro ly AI",
+          "senderRole": "AI",
+          "text": "Tro ly da nhan tin nhan cua ban. Admin se phan hoi som. Neu gap su co khan cap, ban hay ghi ro phong va muc do uu tien (cao/trung binh/thap).",
+          "clientMessageId": null,
+          "timestamp": "2026-03-22T13:34:03.456Z"
+        },
+        {
+          "id": "d60bcd6b-70f4-46dd-ad03-6112d081206d",
+          "conversationId": "e9b8f75f-812c-4293-b09d-98146bb81336",
+          "senderId": "0ca23ad7-a90e-495d-9aaf-13ee3e4559df",
+          "senderName": "quang",
+          "senderRole": "TENANT",
+          "text": "phòng tôi đang mất điện",
+          "clientMessageId": "1774186458024-xljveb",
+          "timestamp": "2026-03-22T13:34:18.024Z"
+        },
+        {
+          "id": "a593001e-3a14-4907-91dc-6b5097e15db4",
+          "conversationId": "e9b8f75f-812c-4293-b09d-98146bb81336",
+          "senderId": "ai-assistant",
+          "senderName": "Tro ly AI",
+          "senderRole": "AI",
+          "text": "Da nhan thong tin su co dien. Ban thu kiem tra aptomat trong phong, neu van loi thi admin se tao phieu bao tri uu tien trong it phut toi.",
+          "clientMessageId": null,
+          "timestamp": "2026-03-22T13:34:19.239Z"
+        },
+        {
+          "id": "8ab0a604-3726-4790-a428-f7beac43cc33",
+          "conversationId": "e9b8f75f-812c-4293-b09d-98146bb81336",
+          "senderId": "cd5d3f69-b4b9-4d66-8094-4ff84718c4c7",
+          "senderName": "quang",
+          "senderRole": "ADMIN",
+          "text": "chào bạn bạn đang bị sự cố gì",
+          "clientMessageId": "1774186520518-qaqf6w",
+          "timestamp": "2026-03-22T13:35:20.519Z"
+        },
+        {
+          "id": "537fd7d4-b1d0-472e-9f96-945889d63648",
+          "conversationId": "e9b8f75f-812c-4293-b09d-98146bb81336",
+          "senderId": "0ca23ad7-a90e-495d-9aaf-13ee3e4559df",
+          "senderName": "quang",
+          "senderRole": "TENANT",
+          "text": "[YÊU CẦU THUÊ PHÒNG] Xin chào admin! Tôi là quang (email: quangqq@gmail.com, SĐT: chưa cập nhật). Tôi muốn thuê phòng số 003, Tầng 1, Loại: STUDIO, Giá: 5.200.000₫/tháng. Vui lòng liên hệ lại để hoàn tất thủ tục.",
+          "clientMessageId": "rent-16648AA2-4AE7-4F84-9FF1-F52CFE6A776E-1774189175148",
+          "timestamp": "2026-03-22T14:19:35.150Z"
+        },
+        {
+          "id": "0a6c21a5-39a2-46c3-a6c3-00151aa4895a",
+          "conversationId": "e9b8f75f-812c-4293-b09d-98146bb81336",
+          "senderId": "ai-assistant",
+          "senderName": "Tro ly AI",
+          "senderRole": "AI",
+          "text": "Xin chao! Toi la tro ly tu dong. Ban cu mo ta van de can ho tro, admin se tiep nhan va phan hoi som.",
+          "clientMessageId": null,
+          "timestamp": "2026-03-22T14:19:36.360Z"
+        },
+        {
+          "id": "6b063ffb-9104-46ca-8e7c-9b5151fc7056",
+          "conversationId": "e9b8f75f-812c-4293-b09d-98146bb81336",
+          "senderId": "0ca23ad7-a90e-495d-9aaf-13ee3e4559df",
+          "senderName": "quang",
+          "senderRole": "TENANT",
+          "text": "còn phòng không",
+          "clientMessageId": "1774224376707-k6i2ll",
+          "timestamp": "2026-03-23T00:06:16.711Z"
+        },
+        {
+          "id": "53bb1fed-ab35-44a1-85e9-bfc3c4d73fbc",
+          "conversationId": "e9b8f75f-812c-4293-b09d-98146bb81336",
+          "senderId": "ai-assistant",
+          "senderName": "Tro ly AI",
+          "senderRole": "AI",
+          "text": "Tro ly da nhan tin nhan cua ban. Admin se phan hoi som. Neu gap su co khan cap, ban hay ghi ro phong va muc do uu tien (cao/trung binh/thap).",
+          "clientMessageId": null,
+          "timestamp": "2026-03-23T00:06:17.928Z"
+        },
+        {
+          "id": "6ae22143-f478-4e0e-991e-4f2f0b459b23",
+          "conversationId": "e9b8f75f-812c-4293-b09d-98146bb81336",
+          "senderId": "0ca23ad7-a90e-495d-9aaf-13ee3e4559df",
+          "senderName": "quang",
+          "senderRole": "TENANT",
+          "text": "tôi muốn thuê phòng",
+          "clientMessageId": "1774224394275-rvov8f",
+          "timestamp": "2026-03-23T00:06:34.275Z"
+        },
+        {
+          "id": "a539a5f5-a723-49f0-a180-4be185f37176",
+          "conversationId": "e9b8f75f-812c-4293-b09d-98146bb81336",
+          "senderId": "ai-assistant",
+          "senderName": "Tro ly AI",
+          "senderRole": "AI",
+          "text": "Tro ly da nhan tin nhan cua ban. Admin se phan hoi som. Neu gap su co khan cap, ban hay ghi ro phong va muc do uu tien (cao/trung binh/thap).",
+          "clientMessageId": null,
+          "timestamp": "2026-03-23T00:06:35.478Z"
+        },
+        {
+          "id": "15810e80-1b3d-4ba3-b5e9-e8dff23e7d1c",
+          "conversationId": "e9b8f75f-812c-4293-b09d-98146bb81336",
+          "senderId": "cd5d3f69-b4b9-4d66-8094-4ff84718c4c7",
+          "senderName": "quang",
+          "senderRole": "ADMIN",
+          "text": "chào anh , anh muốn thuê phòng nào",
+          "clientMessageId": "1774224456437-qitehi",
+          "timestamp": "2026-03-23T00:07:36.435Z"
+        }
+      ],
+      "lastMessage": "chào anh , anh muốn thuê phòng nào",
+      "lastTime": "2026-03-23T00:07:36.435Z",
+      "unread": 0
+    }
+  ],
+  "savedAt": "2026-03-23T00:14:56.131Z"
+}

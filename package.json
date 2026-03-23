@@ -2,33 +2,17 @@
   "name": "phong-tro-v1",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "be": "node be.mjs"
-  },
-  "dependencies": {
-    "lucide-react": "^0.563.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "recharts": "^3.7.0",
-    "ws": "^8.18.0"
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "npm --prefix ./client run build",
+    "build:server": "npm --prefix ./server run build",
+    "dev": "concurrently -k -n CLIENT,SERVER,CHAT -c cyan,green,magenta \"npm run dev:client\" \"npm run dev:server\" \"npm run dev:chat\"",
+    "dev:client": "npm --prefix ./client run dev",
+    "dev:server": "npm --prefix ./server run dev",
+    "dev:chat": "npm --prefix ./server run chat",
+    "install:all": "npm install && npm --prefix ./client install && npm --prefix ./server install"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "@types/node": "^24.10.1",
-    "@types/react": "^19.2.5",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
-    "eslint": "^9.39.1",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
-    "globals": "^16.5.0",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4"
+    "concurrently": "^9.2.1"
   }
 }

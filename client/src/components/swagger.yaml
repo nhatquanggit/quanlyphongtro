@@ -1,0 +1,1781 @@
+openapi: 3.0.0
+info:
+  title: Phong Tro API
+  description: API quản lý phòng trọ - Room Rental Management System
+  version: 1.0.0
+  contact:
+    name: API Support
+servers:
+  - url: 'http://localhost:3000/api'
+    description: Development Server
+
+paths:
+  # ===== AUTH ENDPOINTS =====
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDto'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
+                  fullName:
+                    type: string
+                  token:
+                    type: string
+                  refreshToken:
+                    type: string
+        '400':
+          description: Invalid input data
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
+                  token:
+                    type: string
+                  refreshToken:
+                    type: string
+        '401':
+          description: Invalid credentials
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        '401':
+          description: Invalid refresh token
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+        '401':
+          description: Unauthorized
+
+  # ===== PROPERTIES ENDPOINTS =====
+  /properties:
+    post:
+      tags:
+        - Properties
+      summary: Create new property
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePropertyDto'
+      responses:
+        '201':
+          description: Property created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+        '401':
+          description: Unauthorized
+
+    get:
+      tags:
+        - Properties
+      summary: Get all properties
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Property'
+        '401':
+          description: Unauthorized
+
+  /properties/{id}:
+    get:
+      tags:
+        - Properties
+      summary: Get property by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Property details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+        '404':
+          description: Property not found
+
+    put:
+      tags:
+        - Properties
+      summary: Update property
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePropertyDto'
+      responses:
+        '200':
+          description: Property updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+        '404':
+          description: Property not found
+
+    delete:
+      tags:
+        - Properties
+      summary: Delete property
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Property deleted successfully
+        '404':
+          description: Property not found
+
+  # ===== ROOMS ENDPOINTS =====
+  /rooms:
+    post:
+      tags:
+        - Rooms
+      summary: Create a new room
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoomDto'
+      responses:
+        '201':
+          description: Room created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+
+    get:
+      tags:
+        - Rooms
+      summary: Get all rooms with filters
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [VACANT, OCCUPIED, MAINTENANCE, RESERVED]
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [SINGLE, DOUBLE, DELUXE]
+        - name: floor
+          in: query
+          schema:
+            type: number
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: number
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: number
+            default: 10
+      responses:
+        '200':
+          description: List of rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Room'
+
+  /rooms/stats:
+    get:
+      tags:
+        - Rooms
+      summary: Get room statistics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Room statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalRooms:
+                    type: number
+                  vacantRooms:
+                    type: number
+                  occupiedRooms:
+                    type: number
+                  maintenanceRooms:
+                    type: number
+                  occupancyRate:
+                    type: number
+
+  /rooms/{id}:
+    get:
+      tags:
+        - Rooms
+      summary: Get room by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Room details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '404':
+          description: Room not found
+
+    patch:
+      tags:
+        - Rooms
+      summary: Update room
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoomDto'
+      responses:
+        '200':
+          description: Room updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+
+    delete:
+      tags:
+        - Rooms
+      summary: Delete room
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Room deleted successfully
+
+  # ===== TENANTS ENDPOINTS =====
+  /tenants:
+    post:
+      tags:
+        - Tenants
+      summary: Create new tenant
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantDto'
+      responses:
+        '201':
+          description: Tenant created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+
+    get:
+      tags:
+        - Tenants
+      summary: Get all tenants
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of tenants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tenant'
+
+  /tenants/{id}:
+    get:
+      tags:
+        - Tenants
+      summary: Get tenant by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tenant details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '404':
+          description: Tenant not found
+
+    put:
+      tags:
+        - Tenants
+      summary: Update tenant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTenantDto'
+      responses:
+        '200':
+          description: Tenant updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+
+    delete:
+      tags:
+        - Tenants
+      summary: Delete tenant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tenant deleted successfully
+
+  # ===== INVOICES ENDPOINTS =====
+  /invoices:
+    post:
+      tags:
+        - Invoices
+      summary: Create a new invoice
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvoiceDto'
+      responses:
+        '201':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+
+    get:
+      tags:
+        - Invoices
+      summary: Get all invoices with filters
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [UNPAID, PAID, OVERDUE, CANCELLED]
+        - name: page
+          in: query
+          schema:
+            type: number
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: number
+            default: 10
+      responses:
+        '200':
+          description: List of invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Invoice'
+
+  /invoices/generate-all:
+    post:
+      tags:
+        - Invoices
+      summary: Generate invoices for all active contracts
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - propertyId
+                - billingMonth
+              properties:
+                propertyId:
+                  type: string
+                billingMonth:
+                  type: string
+                  example: '2024-01'
+      responses:
+        '201':
+          description: Invoices generated successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Invoice'
+
+  /invoices/stats:
+    get:
+      tags:
+        - Invoices
+      summary: Get invoice statistics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalInvoices:
+                    type: number
+                  paidInvoices:
+                    type: number
+                  unpaidInvoices:
+                    type: number
+                  totalRevenue:
+                    type: number
+                  collectionRate:
+                    type: number
+
+  /invoices/{id}:
+    get:
+      tags:
+        - Invoices
+      summary: Get invoice by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '404':
+          description: Invoice not found
+
+    patch:
+      tags:
+        - Invoices
+      summary: Update invoice
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInvoiceDto'
+      responses:
+        '200':
+          description: Invoice updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+
+    delete:
+      tags:
+        - Invoices
+      summary: Delete invoice
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice deleted successfully
+
+  /invoices/{id}/mark-paid:
+    patch:
+      tags:
+        - Invoices
+      summary: Mark invoice as paid
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkPaidDto'
+      responses:
+        '200':
+          description: Invoice marked as paid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+
+  # ===== MAINTENANCE ENDPOINTS =====
+  /maintenance:
+    post:
+      tags:
+        - Maintenance
+      summary: Create a new maintenance request
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMaintenanceDto'
+      responses:
+        '201':
+          description: Maintenance request created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Maintenance'
+
+    get:
+      tags:
+        - Maintenance
+      summary: Get all maintenance requests with filters
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, IN_PROGRESS, COMPLETED, CANCELLED]
+        - name: urgency
+          in: query
+          schema:
+            type: string
+            enum: [LOW, MEDIUM, HIGH, URGENT]
+        - name: page
+          in: query
+          schema:
+            type: number
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: number
+            default: 10
+      responses:
+        '200':
+          description: List of maintenance requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Maintenance'
+
+  /maintenance/stats:
+    get:
+      tags:
+        - Maintenance
+      summary: Get maintenance statistics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Maintenance statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalRequests:
+                    type: number
+                  pendingRequests:
+                    type: number
+                  inProgressRequests:
+                    type: number
+                  completedRequests:
+                    type: number
+                  averageResolutionTime:
+                    type: number
+
+  /maintenance/{id}:
+    get:
+      tags:
+        - Maintenance
+      summary: Get maintenance request by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Maintenance request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Maintenance'
+        '404':
+          description: Maintenance request not found
+
+    patch:
+      tags:
+        - Maintenance
+      summary: Update maintenance request
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMaintenanceDto'
+      responses:
+        '200':
+          description: Maintenance request updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Maintenance'
+
+    delete:
+      tags:
+        - Maintenance
+      summary: Delete maintenance request
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Maintenance request deleted successfully
+
+  /maintenance/{id}/assign:
+    patch:
+      tags:
+        - Maintenance
+      summary: Assign maintenance request to a worker
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignMaintenanceDto'
+      responses:
+        '200':
+          description: Maintenance request assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Maintenance'
+
+  /maintenance/{id}/complete:
+    patch:
+      tags:
+        - Maintenance
+      summary: Mark maintenance request as completed
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteMaintenanceDto'
+      responses:
+        '200':
+          description: Maintenance request completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Maintenance'
+
+  # ===== DASHBOARD ENDPOINTS =====
+  /dashboard/kpis:
+    get:
+      tags:
+        - Dashboard
+      summary: Get all KPIs for dashboard
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dashboard KPIs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalRevenue:
+                    type: number
+                  totalExpenses:
+                    type: number
+                  netProfit:
+                    type: number
+                  occupancyRate:
+                    type: number
+                  collectionRate:
+                    type: number
+
+  /dashboard/activities:
+    get:
+      tags:
+        - Dashboard
+      summary: Get recent activities
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: number
+            default: 10
+      responses:
+        '200':
+          description: Recent activities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /dashboard/alerts:
+    get:
+      tags:
+        - Dashboard
+      summary: Get important alerts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Important alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /dashboard/revenue-chart:
+    get:
+      tags:
+        - Dashboard
+      summary: Get revenue chart data
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+        - name: months
+          in: query
+          schema:
+            type: number
+            default: 6
+      responses:
+        '200':
+          description: Revenue chart data
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /dashboard/occupancy-trend:
+    get:
+      tags:
+        - Dashboard
+      summary: Get occupancy trend data
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+        - name: months
+          in: query
+          schema:
+            type: number
+            default: 6
+      responses:
+        '200':
+          description: Occupancy trend data
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ===== REPORTS ENDPOINTS =====
+  /reports:
+    get:
+      tags:
+        - Reports
+      summary: Get all reports
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: number
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: number
+            default: 10
+      responses:
+        '200':
+          description: List of reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Report'
+
+    post:
+      tags:
+        - Reports
+      summary: Generate a financial report
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - propertyId
+                - type
+                - startDate
+                - endDate
+              properties:
+                propertyId:
+                  type: string
+                type:
+                  type: string
+                  enum: [REVENUE, EXPENSE, PROFIT_LOSS]
+                startDate:
+                  type: string
+                  format: date-time
+                endDate:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+
+  /reports/{id}:
+    get:
+      tags:
+        - Reports
+      summary: Get report by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Report details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+        '404':
+          description: Report not found
+
+    delete:
+      tags:
+        - Reports
+      summary: Delete report
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Report deleted successfully
+
+  # ===== FILES ENDPOINTS =====
+  /files/upload:
+    post:
+      tags:
+        - Files
+      summary: Upload a file
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                  filename:
+                    type: string
+                  size:
+                    type: number
+        '400':
+          description: No file uploaded or file size exceeds limit
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # Auth DTOs
+    RegisterDto:
+      type: object
+      required:
+        - email
+        - password
+        - fullName
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+        fullName:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum: [ADMIN, STAFF, MANAGER]
+          default: STAFF
+
+    LoginDto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    # Property DTOs
+    CreatePropertyDto:
+      type: object
+      required:
+        - name
+        - address
+        - totalFloors
+        - totalRooms
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        totalFloors:
+          type: number
+        totalRooms:
+          type: number
+        currency:
+          type: string
+          default: VND
+        timezone:
+          type: string
+          default: Asia/Ho_Chi_Minh
+        settings:
+          type: object
+
+    UpdatePropertyDto:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        totalFloors:
+          type: number
+        totalRooms:
+          type: number
+        currency:
+          type: string
+        timezone:
+          type: string
+        settings:
+          type: object
+
+    Property:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        totalFloors:
+          type: number
+        totalRooms:
+          type: number
+        currency:
+          type: string
+        timezone:
+          type: string
+        ownerId:
+          type: string
+        settings:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Room DTOs
+    CreateRoomDto:
+      type: object
+      required:
+        - propertyId
+        - roomNumber
+        - floor
+        - type
+        - price
+        - deposit
+      properties:
+        propertyId:
+          type: string
+        roomNumber:
+          type: string
+        floor:
+          type: number
+          minimum: 1
+        type:
+          type: string
+          enum: [SINGLE, DOUBLE, DELUXE]
+        price:
+          type: number
+          minimum: 0
+        deposit:
+          type: number
+          minimum: 0
+        area:
+          type: number
+          minimum: 0
+        amenities:
+          type: object
+        description:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+
+    UpdateRoomDto:
+      type: object
+      properties:
+        roomNumber:
+          type: string
+        floor:
+          type: number
+          minimum: 1
+        type:
+          type: string
+          enum: [SINGLE, DOUBLE, DELUXE]
+        status:
+          type: string
+          enum: [VACANT, OCCUPIED, MAINTENANCE, RESERVED]
+        price:
+          type: number
+          minimum: 0
+        deposit:
+          type: number
+          minimum: 0
+        area:
+          type: number
+          minimum: 0
+        amenities:
+          type: object
+        description:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+
+    Room:
+      type: object
+      properties:
+        id:
+          type: string
+        propertyId:
+          type: string
+        roomNumber:
+          type: string
+        floor:
+          type: number
+        type:
+          type: string
+        status:
+          type: string
+        price:
+          type: number
+        deposit:
+          type: number
+        area:
+          type: number
+        amenities:
+          type: object
+        description:
+          type: string
+        images:
+          type: array
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Tenant DTOs
+    CreateTenantDto:
+      type: object
+      required:
+        - propertyId
+        - fullName
+        - phone
+      properties:
+        propertyId:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        idCard:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date-time
+        address:
+          type: string
+        emergencyContact:
+          type: object
+
+    UpdateTenantDto:
+      type: object
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        idCard:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date-time
+        address:
+          type: string
+        emergencyContact:
+          type: object
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+        propertyId:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        idCard:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date-time
+        address:
+          type: string
+        emergencyContact:
+          type: object
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Invoice DTOs
+    CreateInvoiceDto:
+      type: object
+      required:
+        - contractId
+        - tenantId
+        - roomId
+        - propertyId
+        - billingMonth
+        - dueDate
+        - rentAmount
+      properties:
+        contractId:
+          type: string
+        tenantId:
+          type: string
+        roomId:
+          type: string
+        propertyId:
+          type: string
+        billingMonth:
+          type: string
+          example: '2024-01'
+        dueDate:
+          type: string
+          format: date-time
+        rentAmount:
+          type: number
+          minimum: 0
+        electricityUsage:
+          type: number
+          minimum: 0
+        electricityCost:
+          type: number
+          minimum: 0
+        waterUsage:
+          type: number
+          minimum: 0
+        waterCost:
+          type: number
+          minimum: 0
+        serviceCharges:
+          type: object
+        notes:
+          type: string
+
+    UpdateInvoiceDto:
+      type: object
+      properties:
+        dueDate:
+          type: string
+          format: date-time
+        rentAmount:
+          type: number
+          minimum: 0
+        electricityUsage:
+          type: number
+          minimum: 0
+        electricityCost:
+          type: number
+          minimum: 0
+        waterUsage:
+          type: number
+          minimum: 0
+        waterCost:
+          type: number
+          minimum: 0
+        serviceCharges:
+          type: object
+        status:
+          type: string
+          enum: [UNPAID, PAID, OVERDUE, CANCELLED]
+        notes:
+          type: string
+
+    MarkPaidDto:
+      type: object
+      required:
+        - paidAmount
+        - paymentDate
+      properties:
+        paidAmount:
+          type: number
+          minimum: 0
+        paymentDate:
+          type: string
+          format: date-time
+        paymentMethod:
+          type: string
+        notes:
+          type: string
+
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+        contractId:
+          type: string
+        tenantId:
+          type: string
+        roomId:
+          type: string
+        propertyId:
+          type: string
+        billingMonth:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+        rentAmount:
+          type: number
+        electricityUsage:
+          type: number
+        electricityCost:
+          type: number
+        waterUsage:
+          type: number
+        waterCost:
+          type: number
+        serviceCharges:
+          type: object
+        totalAmount:
+          type: number
+        paidAmount:
+          type: number
+        remainingAmount:
+          type: number
+        status:
+          type: string
+        paymentDate:
+          type: string
+          format: date-time
+        paymentMethod:
+          type: string
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Maintenance DTOs
+    CreateMaintenanceDto:
+      type: object
+      required:
+        - roomId
+        - propertyId
+        - title
+        - description
+        - type
+        - urgency
+      properties:
+        roomId:
+          type: string
+        propertyId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [ELECTRICAL, PLUMBING, HEATING, DOOR_WINDOW, PAINTING, CLEANING, OTHER]
+        urgency:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, URGENT]
+        reportedById:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+
+    UpdateMaintenanceDto:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [ELECTRICAL, PLUMBING, HEATING, DOOR_WINDOW, PAINTING, CLEANING, OTHER]
+        urgency:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, URGENT]
+        status:
+          type: string
+          enum: [PENDING, IN_PROGRESS, COMPLETED, CANCELLED]
+        cost:
+          type: number
+        notes:
+          type: string
+
+    AssignMaintenanceDto:
+      type: object
+      required:
+        - assignedToId
+      properties:
+        assignedToId:
+          type: string
+        scheduledDate:
+          type: string
+          format: date-time
+
+    CompleteMaintenanceDto:
+      type: object
+      required:
+        - cost
+      properties:
+        cost:
+          type: number
+        notes:
+          type: string
+
+    Maintenance:
+      type: object
+      properties:
+        id:
+          type: string
+        roomId:
+          type: string
+        propertyId:
+          type: string
+        reportedById:
+          type: string
+        assignedToId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+        urgency:
+          type: string
+        status:
+          type: string
+        cost:
+          type: number
+        notes:
+          type: string
+        images:
+          type: array
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Report
+    Report:
+      type: object
+      properties:
+        id:
+          type: string
+        propertyId:
+          type: string
+        type:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        data:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
