@@ -11,6 +11,13 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const port = configService.get('PORT') || 3000;
+  const corsOriginEnv = configService.get<string>('CORS_ORIGIN');
+  const corsOrigins = corsOriginEnv
+    ? corsOriginEnv
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : ['*'];
 
   // Serve static uploads folder
   const uploadDir = configService.get('UPLOAD_DIRECTORY') || './uploads';
@@ -20,7 +27,7 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: configService.get('CORS_ORIGIN') || '*',
+    origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins,
     credentials: true,
   });
 

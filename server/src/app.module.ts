@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import * as path from 'path';
 import { PrismaModule } from '@common/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -24,6 +25,10 @@ import { SettingsModule } from './modules/settings/settings.module';
     // Config
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: [
+        path.resolve(process.cwd(), 'server/.env'),
+        path.resolve(process.cwd(), '.env'),
+      ],
     }),
 
     // Rate limiting
