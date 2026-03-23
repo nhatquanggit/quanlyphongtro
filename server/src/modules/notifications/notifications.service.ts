@@ -126,6 +126,44 @@ export class NotificationsService {
     return { ok: true };
   }
 
+  async notifyMaintenanceAssigned(maintenanceId: string, assignedToId: string, title: string, roomNumber?: string) {
+    const assignedUser = await this.prisma.user.findUnique({
+      where: { id: assignedToId },
+      select: { fullName: true, email: true },
+    });
+
+    const assignedName = assignedUser?.fullName || assignedUser?.email || 'Nhan vien';
+    const roomLabel = roomNumber ? ` phong ${roomNumber}` : '';
+
+    // Notify the assigned worker
+    await this.prisma.notification.create({
+      data: {
+        userId: assignedToId,
+        type: 'MAINTENANCE',
+        title: 'Phan cong bao tri moi',
+        message: `Ban vua duoc phan cong bao tri: "${title}"${roomLabel}.`,
+        link: `/maintenance/${maintenanceId}`,
+      },
+    });
+
+    // Notify admins
+    await this.createForAdminUsers({
+      type: 'MAINTENANCE',
+      title: 'Phan cong bao tri',
+      message: `${assignedName} vua duoc phan cong bao tri: "${title}"${roomLabel}.`,
+      link: `/maintenance/${maintenanceId}`,
+    });
+  }
+
+  async notifyMaintenanceCompleted(maintenanceId: string, title: string, roomNumber?: string) {
+    await this.createForAdminUsers({
+      type: 'MAINTENANCE',
+      title: 'Hoan thanh bao tri',
+      message: `Bao tri "${title}"${roomNumber ? ` phong ${roomNumber}` : ''} da hoan thanh.`,
+      link: `/maintenance/${maintenanceId}`,
+    });
+  }
+
   private async createForAdminUsers(payload: AdminNotificationPayload) {
     const admins = await this.prisma.user.findMany({
       where: {

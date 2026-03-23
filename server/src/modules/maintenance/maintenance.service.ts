@@ -130,11 +130,11 @@ export class MaintenanceService {
   }
 
   async assign(id: string, assignDto: AssignMaintenanceDto) {
-    await this.findOne(id);
+    const maintenance = await this.findOne(id);
 
     const { assignedToId, scheduledDate } = assignDto;
 
-    const maintenance = await this.prisma.maintenance.update({
+    const updated = await this.prisma.maintenance.update({
       where: { id },
       data: {
         assignedToId,
@@ -143,21 +143,30 @@ export class MaintenanceService {
       },
       include: {
         assignedTo: { select: { fullName: true, phone: true, email: true } },
+        room: { select: { roomNumber: true } },
       },
     });
 
-    // TODO: Send notification to assigned worker
-    // await this.sendAssignmentNotification(maintenance);
+    try {
+      await this.notificationsService.notifyMaintenanceAssigned(
+        id,
+        assignedToId,
+        maintenance.title,
+        updated.room?.roomNumber,
+      );
+    } catch {
+      // Keep assignment successful even if notification fails
+    }
 
-    return parseJsonFields(maintenance, ['images']);
+    return parseJsonFields(updated, ['images']);
   }
 
   async complete(id: string, completeDto: CompleteMaintenanceDto) {
-    await this.findOne(id);
+    const maintenance = await this.findOne(id);
 
     const { cost, notes } = completeDto;
 
-    const maintenance = await this.prisma.maintenance.update({
+    const updated = await this.prisma.maintenance.update({
       where: { id },
       data: {
         status: MaintenanceStatus.COMPLETED,
@@ -165,12 +174,22 @@ export class MaintenanceService {
         cost,
         notes,
       },
+      include: {
+        room: { select: { roomNumber: true } },
+      },
     });
 
-    // TODO: Send completion notification
-    // await this.sendCompletionNotification(maintenance);
+    try {
+      await this.notificationsService.notifyMaintenanceCompleted(
+        id,
+        maintenance.title,
+        updated.room?.roomNumber,
+      );
+    } catch {
+      // Keep completion successful even if notification fails
+    }
 
-    return parseJsonFields(maintenance, ['images']);
+    return parseJsonFields(updated, ['images']);
   }
 
   async getStats(propertyId?: string) {
